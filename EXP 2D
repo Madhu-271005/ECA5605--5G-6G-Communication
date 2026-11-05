@@ -1,0 +1,77 @@
+clear;
+clc;
+close all;
+
+% Cell radius
+cellRadiusKm = 0.5;
+
+% Convert radius from km to meters
+radiusM = cellRadiusKm * 1000;
+
+% Centre-to-centre spacing of adjacent hexagonal cells
+separationM = sqrt(3) * radiusM;
+
+% Mobile user moves from Base Station 1 to Base Station 2
+xMeters = linspace(0, separationM, 201);
+
+% Minimum distance to avoid log10(0)
+minimumDistanceM = 20;
+
+% Distance from mobile user to each base station
+distance1M = max(abs(xMeters), minimumDistanceM);
+distance2M = max(abs(xMeters - separationM), minimumDistanceM);
+
+% Path-loss parameters
+transmitPowerdBm = 30;
+pathLossAt1m_dB = 40;
+pathLossExponent = 3.5;
+
+% Received power from Base Station 1
+receivedPower1dBm = transmitPowerdBm ...
+    - pathLossAt1m_dB ...
+    - 10 * pathLossExponent .* log10(distance1M);
+
+% Received power from Base Station 2
+receivedPower2dBm = transmitPowerdBm ...
+    - pathLossAt1m_dB ...
+    - 10 * pathLossExponent .* log10(distance2M);
+
+% Find handoff point
+% Handoff occurs when Base Station 2 becomes stronger
+handoffIndex = find( ...
+    receivedPower2dBm >= receivedPower1dBm, ...
+    1, 'first');
+
+handoffPositionM = xMeters(handoffIndex);
+
+% Display handoff position
+fprintf('Estimated handoff position: %.1f m from base station 1\n', ...
+    handoffPositionM);
+
+% Plot received signal strength
+figure;
+
+plot(xMeters / 1000, receivedPower1dBm, ...
+    'b', 'LineWidth', 1.5);
+
+hold on;
+
+plot(xMeters / 1000, receivedPower2dBm, ...
+    'r', 'LineWidth', 1.5);
+
+% Mark handoff position
+xline(handoffPositionM / 1000, ...
+    '--k', 'Estimated handoff');
+
+xlabel('Mobile-user position (km)');
+ylabel('Estimated received power (dBm)');
+
+title('Received Signal Strength Between Adjacent Cells');
+
+legend('Base station 1', ...
+       'Base station 2', ...
+       'Location', 'best');
+
+grid on;
+
+hold off;
