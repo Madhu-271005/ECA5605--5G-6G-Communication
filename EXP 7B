@@ -1,0 +1,45 @@
+clc;
+clear;
+close all;
+
+% 5G NR Numerology
+mu = 0:4;
+
+% Subcarrier spacing in kHz
+scs = [15 30 60 120 240];
+
+% Slot duration in milliseconds
+slot = [1 0.5 0.25 0.125 0.0625];
+
+% -----------------------------------------
+% Plot 1: Slot Duration vs SCS
+% -----------------------------------------
+
+figure;
+
+plot(scs, slot, 'o-', 'LineWidth', 2);
+
+grid on;
+
+xlabel('Subcarrier Spacing (kHz)');
+ylabel('Slot Duration (ms)');
+
+title('5G NR Slot Duration for Different Subcarrier Spacing');
+
+% -----------------------------------------
+% Plot 2: SCS vs Numerology
+% -----------------------------------------
+
+figure;
+
+bar(scs);
+
+grid on;
+
+set(gca, 'XTick', 1:5);
+set(gca, 'XTickLabel', mu);
+
+xlabel('Numerology Index (\mu)');
+ylabel('Subcarrier Spacing (kHz)');
+
+title('5G NR Subcarrier Spacing for Different Numerologies');
