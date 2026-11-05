@@ -1,0 +1,19 @@
+clc;
+clear;
+close all;
+
+SNR_dB = 0:2:20;
+Reliability = zeros(size(SNR_dB));
+
+N = 10000;
+
+for k = 1:length(SNR_dB)
+…
+grid on;
+xlabel('SNR (dB)');
+ylabel('Reliability (1-BER)');
+title('Communication Reliability vs SNR');
+
+ylim([0 1.05]);
+xlim([0 20]);
+xticks(SNR_dB);
