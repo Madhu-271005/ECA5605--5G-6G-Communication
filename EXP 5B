@@ -1,0 +1,19 @@
+clc;
+clear;
+close all;
+
+BWcc = 20;                    % MHz per component carrier
+SE = 4;                       % bits/s/Hz
+CC = [1 2 3];                 % Number of component carriers
+
+AggBW = BWcc .* CC;           % Aggregated bandwidth (MHz)
+Throughput = AggBW .* SE;     % Estimated throughput (Mbps)
+…bar(CC, Throughput);
+grid on;
+
+xlabel('Number of Aggregated Component Carriers');
+ylabel('Estimated Throughput (Mbps)');
+title('LTE-Advanced Carrier Aggregation Throughput');
+
+xticks(CC);
+ylim([0 260]);
