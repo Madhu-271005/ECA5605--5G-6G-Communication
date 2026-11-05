@@ -1,0 +1,19 @@
+clc;
+clear;
+close all;
+
+N = 8;                              % Antenna elements
+theta = -90:1:90;                   % Observation angle
+steer = [-60 -30 0 30 60];          % Steering angles
+
+gain = zeros(size(steer));
+
+…figure;
+plot(steer, gain, 'o-', 'LineWidth', 2);
+
+grid on;
+xlabel('Steering Angle (Degrees)');
+ylabel('Beamforming Gain (dB)');
+title('Beamforming Gain for Different Steering Directions');
+
+xticks(steer);
