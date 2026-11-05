@@ -1,0 +1,177 @@
+clear;
+clc;
+close all;
+
+% Representative frequency bands
+freqGHz = [0.7 3.5 28];
+freqMHz = freqGHz * 1000;
+
+bandName = {
+    'Sub-1 GHz';
+    'Mid-band';
+    'mmWave'
+};
+
+% Link-budget assumptions
+txPowerdBm = 30;
+gtDbi = 0;
+grDbi = 0;
+
+% Distance range
+distanceKm = logspace(log10(0.1), log10(2), 200);
+
+distanceAtPointKm = 0.5;
+
+% Free-space path loss
+% d = distance in km
+% f = frequency in MHz
+fspl = @(fMHz, dKm) ...
+    32.44 + 20*log10(fMHz) + 20*log10(dKm);
+
+% Calculate path loss at 0.5 km
+lossAtPoint = fspl(freqMHz, distanceAtPointKm);
+
+% Calculate received power
+rxAtPoint = txPowerdBm + gtDbi + grDbi - lossAtPoint;
+
+% Create link budget table
+linkTable = table( ...
+    bandName, ...
+    freqGHz(:), ...
+    lossAtPoint(:), ...
+    rxAtPoint(:), ...
+    'VariableNames', ...
+    {'Band', ...
+     'Frequency_GHz', ...
+     'FSPL_dB', ...
+     'EstimatedRx_dBm'});
+
+% Display link budget
+disp('Free-Space Link Budget at 0.5 km:');
+disp(linkTable);
+
+% ------------------------------------------------
+% Path loss versus distance
+% ------------------------------------------------
+
+figure;
+
+subplot(1,2,1);
+
+hold on;
+grid on;
+
+for k = 1:length(freqMHz)
+
+    plot(distanceKm, ...
+        fspl(freqMHz(k), distanceKm), ...
+        'LineWidth', 1.5);
+
+end
+
+set(gca, 'XScale', 'log');
+
+xlabel('Distance (km)');
+ylabel('Path loss (dB)');
+
+legend(bandName, 'Location', 'northwest');
+
+title('Free-Space Path Loss');
+
+hold off;
+
+% ------------------------------------------------
+% Received power versus distance
+% ------------------------------------------------
+
+subplot(1,2,2);
+
+hold on;
+grid on;
+
+for k = 1:length(freqMHz)
+
+    rx = txPowerdBm + gtDbi + grDbi ...
+        - fspl(freqMHz(k), distanceKm);
+
+    plot(distanceKm, rx, ...
+        'LineWidth', 1.5);
+
+end
+
+set(gca, 'XScale', 'log');
+
+xlabel('Distance (km)');
+ylabel('Estimated received power (dBm)');
+
+legend(bandName, 'Location', 'southwest');
+
+title('Illustrative Received Power');
+
+hold off;
+
+% ------------------------------------------------
+% Co-channel reuse calculation
+% ------------------------------------------------
+
+cellRadiusKm = 0.5;
+
+reuseN = [1 3 7 12];
+
+pathLossExponent = 3.5;
+
+% Approximate reuse distance
+reuseDistance = sqrt(3 * reuseN) ...
+    * cellRadiusKm;
+
+% Approximate SIR
+sirLinear = ...
+    (reuseDistance / cellRadiusKm) ...
+    .^ pathLossExponent / 6;
+
+sirDb = 10 * log10(sirLinear);
+
+% Create reuse table
+reuseTable = table( ...
+    reuseN(:), ...
+    reuseDistance(:), ...
+    sirDb(:), ...
+    'VariableNames', ...
+    {'ReuseClusterN', ...
+     'ApproxInterfererDistance_km', ...
+     'ApproxSIR_dB'});
+
+% Display reuse results
+disp('Co-Channel Reuse Results:');
+disp(reuseTable);
+
+% ------------------------------------------------
+% Plot SIR versus reuse cluster size
+% ------------------------------------------------
+
+figure;
+
+plot(reuseN, sirDb, ...
+    'o-', 'LineWidth', 1.5);
+
+grid on;
+
+xlabel('Reuse cluster size N');
+ylabel('Approximate SIR (dB)');
+
+title('Simplified Co-Channel SIR versus Reuse Cluster Size');
+
+% ------------------------------------------------
+% Display received power at 0.5 km
+% ------------------------------------------------
+
+fprintf('\nAt %.2f km, estimated received powers are:\n', ...
+    distanceAtPointKm);
+
+rxTable = table( ...
+    bandName, ...
+    rxAtPoint(:), ...
+    'VariableNames', ...
+    {'Band', 'Rx_dBm'});
+
+disp(rxTable);
